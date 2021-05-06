@@ -45,7 +45,7 @@ namespace Calage_Inserts
                 conn.Open();
                 OracleCommand cmd = new OracleCommand();
                 cmd.Connection = conn;
-                cmd.CommandText = "SELECT DISTINCT JOB_NB, ROUTING_NAME, CD_PRESS, CD_MOLD, PRODUCT FROM COMBO_JOB_HEADER_TRACKING WHERE JOB_NB NOT IN(SELECT DISTINCT JOB_NB FROM COMBO_JOB_HEADER_TRACKING WHERE IS_INSERT_READY= 'T') and JOB_NB > 10125000 order by JOB_NB desc";
+                cmd.CommandText = "SELECT DISTINCT JOB_NB, ROUTING_NAME, CD_PRESS, CD_MOLD, PRODUCT FROM COMBO_JOB_HEADER_TRACKING WHERE JOB_NB NOT IN(SELECT DISTINCT JOB_NB FROM COMBO_JOB_HEADER_TRACKING WHERE IS_INSERT_READY= 'T') and JOB_NB > 10127000 order by JOB_NB desc";
                 //cmd.CommandText = "SELECT DISTINCT JOB_NB, ROUTING_NAME, CD_PRESS, CD_MOLD, PRODUCT FROM COMBO_JOB_HEADER_TRACKING WHERE JOB_NB = 10126971";
                 OracleDataReader reader = cmd.ExecuteReader();
                 dataGridView1.Rows.Clear();
@@ -163,6 +163,38 @@ namespace Calage_Inserts
             public string ColumnIndex { get; set; }
             public string Eye { get; set; }
         }
+        public class donnees13
+        {
+            public donnees13() { }
+
+            public string Numero { get; set; }
+
+        }
+        public class donnees14
+        {
+            public donnees14() { }
+
+            public string Numero { get; set; }
+
+        }
+        public class donnees15
+        {
+            public donnees15() { }
+            public string ins_cv { get; set; }
+            public string ins_cx { get; set; }
+        }
+        public class donnees16
+        {
+            public donnees16() { }
+            public int Job_prec { get; set; }
+        }
+        public class donnees17
+        {
+            public donnees17() { }
+            public string ins_cv_Job_prec { get; set; }
+            public string ins_cx_Job_prec { get; set; }
+        }
+
         private DataGridViewCell GetCellWhereTextExistsInGridView(string searchText, DataGridView dataGridView, int columnIndex)
         {
             DataGridViewCell cellWhereTextIsMet = null;
@@ -192,30 +224,6 @@ namespace Calage_Inserts
                 // La valeur n'existe pas dans la grille
                 MessageBox.Show("Cet job n'existe pas");
             }
-            /*
-            string searchValue = textBox1.Text;
-            int rowIndex = -1;
-
-            dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            try
-            {
-                foreach (DataGridViewRow row in dataGridView1.Rows)
-                {
-                    if (row.Cells[row.Index].Value.ToString().Equals(searchValue))
-                    {
-                        rowIndex = row.Index;
-                        dataGridView1.Rows[row.Index].Selected = true;
-                        break;
-                    }
-                }
-                
-            }
-            catch (Exception exc)
-            {
-                //MessageBox.Show("Ce Job n'existe pas dans la liste");
-                Console.WriteLine(exc.Message);
-            }
-            */
         }
         private void button5_Click_1(object sender, EventArgs e)
         {
@@ -227,7 +235,7 @@ namespace Calage_Inserts
             var FINI_PAS_FINI = "";
             var cavite = "";
             var ins_cv = "";
-            var Diametre = 0;
+            var Diametre = "";
             int i = 2;
             int cavité = 1;
 
@@ -249,6 +257,18 @@ namespace Calage_Inserts
 
             conn.Close();
 
+            var info_produit = "";
+
+            conn.Open();
+            cmd.CommandText = "SELECT distinct (SHOTS_NB), A.PRODUCT, B.DESCRIPTION FROM COMBO_JOB_HEADER A, COMBO_PRODUCTS B where JOB_NB = '" + dataGridView1.CurrentRow.Cells["JOB_NB"].Value + "' and A.PRODUCT = B.PRODUCT";
+            OracleDataReader reader1 = cmd.ExecuteReader();
+            while (reader1.Read() == true)
+            {
+                info_produit = reader1.GetString(2);
+            }
+
+            conn.Close();
+
             object misValue = System.Reflection.Missing.Value;
 
             Excel._Application xlsp = new Microsoft.Office.Interop.Excel.Application();
@@ -265,6 +285,7 @@ namespace Calage_Inserts
             {
                 xlworkSheet.get_Range("A1", "I30").Borders.Weight = Excel.XlBorderWeight.xlThin;
                 xlworkSheet.get_Range("A1", "I30").HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
+                xlworkSheet.get_Range("A1", "I30").ColumnWidth = 8.5;
                 xlworkSheet.Cells[1, 1] = "Date";
                 xlworkSheet.Cells[1, 2] = DateTime.Now.ToString("yyyy/MM/dd");
                 xlworkSheet.Cells[1, 5] = "Semaine";
@@ -274,12 +295,10 @@ namespace Calage_Inserts
                 xlworkSheet.get_Range("B1", "D1").Merge(false);
                 xlworkSheet.get_Range("G1", "H1").Merge(false);
                 xlworkSheet.get_Range("G2", "H2").Merge(false);
-                xlworkSheet.get_Range("G2", "H2").Font.Size = 8;
+                xlworkSheet.get_Range("G2", "H2").Font.Size = 6;
                 xlworkSheet.Cells[2, 7] = "VALIDATION RECEPTION REGLEUR";
-                xlworkSheet.get_Range("A2", "I2").Font.Bold = 1;
                 xlworkSheet.get_Range("A2:A3", "F2:F3").Merge(false);
                 xlworkSheet.get_Range("G3", "I3").Merge(false);
-                xlworkSheet.get_Range("A4:A30", "I4:I30").Font.Bold = 1;
                 xlworkSheet.Cells[4, 1] = "Job";
                 xlworkSheet.Cells[4, 5] = cd_mold;
                 xlworkSheet.Cells[4, 2] = dataGridView1.CurrentRow.Cells["JOB_NB"].Value;
@@ -289,13 +308,17 @@ namespace Calage_Inserts
                 xlworkSheet.Cells[4, 7] = "Presse";
                 xlworkSheet.Cells[4, 8] = cd_press;
                 xlworkSheet.get_Range("H4", "I4").Merge(false);
-                xlworkSheet.get_Range("A5", "I5").Merge(false);
+                xlworkSheet.Cells[5, 1] = "Info";
+                xlworkSheet.get_Range("B5", "C5").Merge(false);
+                xlworkSheet.get_Range("D5", "F5").Merge(false);
+                xlworkSheet.get_Range("G5", "H5").Merge(false);
+                xlworkSheet.Cells[5, 7] = "Run";
                 xlworkSheet.Cells[6, 1] = "Produit";
                 xlworkSheet.Cells[6, 2] = routing_name;
-                xlworkSheet.get_Range("B6", "E6").Merge(false);
-                xlworkSheet.Cells[6, 6] = "Num Shot";
-                xlworkSheet.Cells[6, 7] = shots_nb;
-                xlworkSheet.get_Range("G6", "I6").Merge(false);
+                xlworkSheet.get_Range("B6", "F6").Merge(false);
+                xlworkSheet.Cells[6, 7] = "Num Shot";
+                xlworkSheet.Cells[6, 8] = shots_nb;
+                xlworkSheet.get_Range("H6", "I6").Merge(false);
                 xlworkSheet.get_Range("A7", "I7").Merge(false);
                 xlworkSheet.Cells[8, 1] = "Inserts convexes";
                 xlworkSheet.get_Range("A8", "I8").Merge(false);
@@ -311,23 +334,32 @@ namespace Calage_Inserts
                 xlworkSheet.Cells[11, 8] = "07";
                 xlworkSheet.Cells[11, 9] = "08";
                 xlworkSheet.Cells[12, 1] = "Base/Sphère";
+                xlworkSheet.get_Range("A12", "I12").Font.Size = 8.5;
+                xlworkSheet.get_Range("A12", "I12").NumberFormat = "0.00";
+                xlworkSheet.get_Range("A14", "A15").Font.Size = 9;
+                xlworkSheet.get_Range("A20", "A21").Font.Size = 9;
                 xlworkSheet.Cells[13, 1] = "Ins CC";
+                xlworkSheet.get_Range("B13", "I13").Font.Bold = 1;
                 xlworkSheet.Cells[14, 1] = "Epais.Bord";
                 xlworkSheet.get_Range("B14", "I14").NumberFormat = "0.00";
                 xlworkSheet.Cells[15, 1] = "Epais.Centre";
                 xlworkSheet.get_Range("B15", "I15").NumberFormat = "0.00";
                 xlworkSheet.Cells[16, 1] = "Cales CC";
-                xlworkSheet.get_Range("B16", "I16").NumberFormat = "0.0";
+                xlworkSheet.get_Range("B16", "I16").NumberFormat = "0.00";
                 xlworkSheet.get_Range("A17", "I17").Merge(false);
                 xlworkSheet.Cells[18, 1] = "CYL";
                 xlworkSheet.get_Range("B18", "I18").NumberFormat = "0.00";
                 xlworkSheet.Cells[19, 1] = "ins CX";
+                xlworkSheet.get_Range("B19", "I19").Font.Bold = 1;
+                xlworkSheet.get_Range("B16", "I16").Font.Bold = 1;
+                xlworkSheet.get_Range("B22", "I22").Font.Bold = 1;
                 xlworkSheet.Cells[20, 1] = "Epais.Ctr.CX";
                 xlworkSheet.get_Range("B20", "I20").NumberFormat = "0.00";
                 xlworkSheet.Cells[21, 1] = "Epais verre";
                 xlworkSheet.get_Range("B21", "I21").NumberFormat = "0.00";
                 xlworkSheet.Cells[22, 1] = "Cales CX";
-                xlworkSheet.get_Range("A23:A24", "I23:I24").Merge(false);
+                xlworkSheet.Cells[23, 1] = "INS CC";
+                xlworkSheet.Cells[24, 1] = "INS CX";
                 xlworkSheet.Cells[25, 1] = "Changement d'inserts";
                 xlworkSheet.get_Range("A25", "I25").Merge(false);
                 xlworkSheet.Cells[26, 1] = "Cavités";
@@ -340,6 +372,7 @@ namespace Calage_Inserts
                 xlworkSheet.Cells[26, 7] = "06";
                 xlworkSheet.Cells[26, 8] = "07";
                 xlworkSheet.Cells[26, 9] = "08";
+
             }
 
             string destination = @"R:\Commun\ACI\Data\Jobs_Combo\Job_" + dataGridView1.CurrentRow.Cells["JOB_NB"].Value;
@@ -362,6 +395,11 @@ namespace Calage_Inserts
             List<donnees10> list10 = new List<donnees10>();
             List<donnees11> list11 = new List<donnees11>();
             List<donnees12> list12 = new List<donnees12>();
+            List<donnees13> list13 = new List<donnees13>();
+            List<donnees14> list14 = new List<donnees14>();
+            List<donnees15> list15 = new List<donnees15>();
+            List<donnees16> list16 = new List<donnees16>();
+            List<donnees17> list17 = new List<donnees17>();
 
             string myConnectionString = @"user id=sa; password=K@rdexlsadm21!; data source=FRESD32615\SQLEXPRESS";
             SqlConnection myConnection = new SqlConnection(myConnectionString);
@@ -378,31 +416,27 @@ namespace Calage_Inserts
             {
                 Nom_Produit = mySqlDataReader.GetString(0);
             }
-            xlworkSheet.Cells[6, 2] = Nom_Produit;
+            xlworkSheet.Cells[7,1] = Nom_Produit;
+
             myConnection.Close();
             con.Close();
-
-
-
-
-
 
             con.Open();
             cm.Connection = con;
             cm.CommandText = "SELECT COMBO_JOB_LINES.CAVITY_JOB_NB, COMBO_JOB_LINES.LB_LOGI_SKU, COMBO_ITEMS.COLUMN_INDEX, COMBO_ITEMS.LINE_INDEX, COMBO_ITEMS.EYE, COMBO_BOM.TYPE_INS_CV, COMBO_ITEMS.PRODUCT, COMBO_ITEMS.DIAMETER  FROM COMBO_JOB_LINES, COMBO_ITEMS, COMBO_BOM where COMBO_ITEMS.LB_LOGI_SKU = COMBO_JOB_LINES.LB_LOGI_SKU and COMBO_BOM.CD_CCE_SKU = COMBO_ITEMS.CD_CCE_SKU and JOB_NB = '" + dataGridView1.CurrentRow.Cells["JOB_NB"].Value + "' ORDER BY COMBO_JOB_LINES.CAVITY_JOB_NB ";
             OracleDataReader reade1 = cm.ExecuteReader();
 
-
             //EN FONCTION DU PRODUIT
 
             if (FINI_PAS_FINI == "FINIS")
             {
+                xlworkSheet.Cells[7, 1] = info_produit;
                 //recuperer cavité + ins_cv + Diamètre
                 while (reade1.Read())
                 {
                     cavite = reade1.GetString(0);
                     ins_cv = reade1.GetString(5);
-                    Diametre = reade1.GetInt32(7);
+                    Diametre = routing_name.Substring(6, 2);
 
                     // ajoute des cavilté dans la liste 2
                     list2.Add(new donnees2
@@ -414,38 +448,28 @@ namespace Calage_Inserts
                 myConnection.Close();
 
                 //TROUVER LE MOULE
-                if (Diametre == 55)
+                if (Diametre == "57")
                 {
                     cd_mold = "DF57";
                 }
-                else if (Diametre == 60)
+                else if (Diametre == "62")
                 {
                     cd_mold = "DF62";
                 }
-                else if (Diametre == 65)
+                else if (Diametre == "67")
                 {
                     cd_mold = "DF67";
                 }
-                else if (Diametre == 70)
+                else if (Diametre == "72")
                 {
                     cd_mold = "DF72";
                 }
-
-                /*var result = MessageBox.Show("coucou thierno", "Attention",    MessageBoxButtons.YesNo,    MessageBoxIcon.Question);
-
-                if (result == DialogResult.Yes)
-                {
-                    MessageBox.Show("coucou Anthony");
-                }
-                if (result == DialogResult.No)
-                {
-                    MessageBox.Show("coucou Carine");
-                }*/
 
                 // pour toutes les cavités 
                 foreach (donnees2 mesdonnees2 in list2)
                 {
                     var ins = "";
+                    var run = 0;
                     var Cales_CC = 0.0;
                     var hauteur_centreCC = 0.0;
 
@@ -453,7 +477,7 @@ namespace Calage_Inserts
                     xlworkSheet.Cells[18, i] = mesdonnees2.ColumnIndex;
 
                     //TROUVER L'INS CC
-                    if (Diametre == 55)
+                    if (Diametre == "57")
                     {
                         myConnection.Close();
                         string strRequete1 = "SELECT [INS] FROM[ACI].[dbo].[Table_PCF_Kids_ins_num_concave_55] where Cylindre ='" + mesdonnees2.ColumnIndex + "' and Sphere ='" + mesdonnees2.LineIndex + "' ";
@@ -464,10 +488,11 @@ namespace Calage_Inserts
                         while (mySqllDataReader.Read())
                         {
                             ins = mySqllDataReader.GetString(0);
+                            xlworkSheet.Cells[23, i] = ins;
                         }
                         myConnection.Close();
                     }
-                    else if (Diametre == 60)
+                    else if (Diametre == "62")
                     {
                         myConnection.Close();
                         string strRequete1 = "SELECT [INS] FROM[ACI].[dbo].[Table_PCF_Kids_ins_num_concave_60] where Cylindre ='" + mesdonnees2.ColumnIndex + "' and Sphere ='" + mesdonnees2.LineIndex + "' ";
@@ -478,6 +503,7 @@ namespace Calage_Inserts
                         while (mySqllDataReader.Read())
                         {
                             ins = mySqllDataReader.GetString(0);
+                            xlworkSheet.Cells[23, i] = ins;
                         }
                         myConnection.Close();
                     }
@@ -492,14 +518,63 @@ namespace Calage_Inserts
                         while (mySqllDataReader.Read())
                         {
                             ins = mySqllDataReader.GetString(0);
+                            xlworkSheet.Cells[23, i] = ins;
                         }
                         myConnection.Close();
                     }
 
+                    //TROUVER LE RUN
+                    if (Diametre == "57")
+                    {
+                        myConnection.Close();
+                        string strRequete1 = "SELECT [Run] FROM [ACI].[dbo].[Table_PCF_Kids_run_57] where Cylindre ='" + mesdonnees2.ColumnIndex + "' and Sphere ='" + mesdonnees2.LineIndex + "' ";
+                        myConnection.Open();
+                        SqlCommand myCommand1 = new SqlCommand(strRequete1, myConnection);
+                        SqlDataReader mySqllDataReader = myCommand1.ExecuteReader();
+
+                        while (mySqllDataReader.Read())
+                        {
+                            run = mySqllDataReader.GetInt32(0);
+                            xlworkSheet.Cells[5, 9] = run;
+                        }
+                        myConnection.Close();
+                    }
+                    else if (Diametre == "62")
+                    {
+                        myConnection.Close();
+                        string strRequete1 = "SELECT [Run] FROM [ACI].[dbo].[Table_PCF_Kids_run_62] where Cylindre ='" + mesdonnees2.ColumnIndex + "' and Sphere ='" + mesdonnees2.LineIndex + "' ";
+                        myConnection.Open();
+                        SqlCommand myCommand1 = new SqlCommand(strRequete1, myConnection);
+                        SqlDataReader mySqllDataReader = myCommand1.ExecuteReader();
+
+                        while (mySqllDataReader.Read())
+                        {
+                            run = mySqllDataReader.GetInt32(0);
+                            xlworkSheet.Cells[5, 9] = run;
+                        }
+                        myConnection.Close();
+                    }
+                    else
+                    {
+                        myConnection.Close();
+                        string strRequete1 = "SELECT [Run] FROM [ACI].[dbo].[Table_PCF_run] where Cylindre ='" + mesdonnees2.ColumnIndex + "' and Sphere ='" + mesdonnees2.LineIndex + "' ";
+                        myConnection.Open();
+                        SqlCommand myCommand1 = new SqlCommand(strRequete1, myConnection);
+                        SqlDataReader mySqllDataReader = myCommand1.ExecuteReader();
+
+                        while (mySqllDataReader.Read())
+                        {
+                            run = mySqllDataReader.GetInt32(0);
+                            xlworkSheet.Cells[5, 9] = run;
+                        }
+                        myConnection.Close();
+                    }
+
+
                     list5.Clear();
 
                     // CHERCHER L'INS CC DANS DANS LE KARDEX
-                    string strRequete2 = "  SELECT distinct C.MaterialName ,D.Hauteur_Bord, D.Hauteur_Centre FROM[PPG].[dbo].[LocContent]A, [PPG].[dbo].[LocContentbreakdown]B,[PPG].[dbo].[Materialbase] C, [ACI].[dbo].[Inserts] D where A.LocContentId = B.LocContentId and C.MaterialId = A.MaterialId and D.Numero = C.MaterialName COLLATE Latin1_General_CI_AS and C.Info1 = '" + ins + "'";
+                    string strRequete2 = "SELECT distinct C.MaterialName ,D.Hauteur_Bord, D.Hauteur_Centre FROM[PPG].[dbo].[LocContent]A, [PPG].[dbo].[LocContentbreakdown]B,[PPG].[dbo].[Materialbase] C, [ACI].[dbo].[Inserts] D where A.LocContentId = B.LocContentId and C.MaterialId = A.MaterialId and D.Numero = C.MaterialName COLLATE Latin1_General_CI_AS and C.Info1 = '" + ins + "'";
                     myConnection.Open();
                     SqlCommand myCommand2 = new SqlCommand(strRequete2, myConnection);
                     SqlDataReader mySqllDataReader2 = myCommand2.ExecuteReader();
@@ -579,7 +654,7 @@ namespace Calage_Inserts
                     }
 
                     //TROUVER L'INS CX
-                    if (Diametre == 55)
+                    if (Diametre == "57")
                     {
                         myConnection.Close();
                         string strRequete1 = "SELECT [INS] FROM[ACI].[dbo].[Table_PCF_Kids_ins_num_convex_55] where Cylindre ='" + mesdonnees2.ColumnIndex + "' and Sphere ='" + mesdonnees2.LineIndex + "' ";
@@ -590,10 +665,11 @@ namespace Calage_Inserts
                         while (mySqllDataReader.Read())
                         {
                             ins = mySqllDataReader.GetString(0);
+                            xlworkSheet.Cells[24, i] = ins;
                         }
                         myConnection.Close();
                     }
-                    else if (Diametre == 60)
+                    else if (Diametre == "62")
                     {
                         myConnection.Close();
                         string strRequete1 = "SELECT [INS] FROM[ACI].[dbo].[Table_PCF_Kids_ins_num_convex_60] where Cylindre ='" + mesdonnees2.ColumnIndex + "' and Sphere ='" + mesdonnees2.LineIndex + "' ";
@@ -604,6 +680,7 @@ namespace Calage_Inserts
                         while (mySqllDataReader.Read())
                         {
                             ins = mySqllDataReader.GetString(0);
+                            xlworkSheet.Cells[24, i] = ins;
                         }
                         myConnection.Close();
                     }
@@ -618,13 +695,14 @@ namespace Calage_Inserts
                         while (mySqllDataReader.Read())
                         {
                             ins = mySqllDataReader.GetString(0);
+                            xlworkSheet.Cells[24, i] = ins;
                         }
                         myConnection.Close();
                     }
 
                     //CHERCHER L'INS CX DANS DANS LE KARDEX
                     list10.Clear();
-                    string strRequete5 = "  SELECT distinct C.MaterialName , D.Hauteur_Centre FROM[PPG].[dbo].[LocContent]A, [PPG].[dbo].[LocContentbreakdown]B,[PPG].[dbo].[Materialbase] C, [ACI].[dbo].[Inserts] D where A.LocContentId = B.LocContentId and C.MaterialId = A.MaterialId and D.Numero = C.MaterialName COLLATE Latin1_General_CI_AS and C.Info1 = '" + ins + "' ";
+                    string strRequete5 = "SELECT distinct C.MaterialName , D.Hauteur_Centre FROM[PPG].[dbo].[LocContent]A, [PPG].[dbo].[LocContentbreakdown]B,[PPG].[dbo].[Materialbase] C, [ACI].[dbo].[Inserts] D where A.LocContentId = B.LocContentId and C.MaterialId = A.MaterialId and D.Numero = C.MaterialName COLLATE Latin1_General_CI_AS and C.Info1 = '" + ins + "' ";
                     myConnection.Open();
                     SqlCommand myCommand5 = new SqlCommand(strRequete5, myConnection);
                     SqlDataReader mySqllDataReader5 = myCommand5.ExecuteReader();
@@ -688,9 +766,19 @@ namespace Calage_Inserts
 
                     // TROUVER EPAISSEUR VERRE
                     var epaisseur = 0.0;
-                    if (Diametre == 55 || Diametre == 60)
+                    if (Diametre == "57" || Diametre == "62")
                     {
-                        string strRequete7 = "SELECT [Epaisseur] FROM [ACI].[dbo].[Table_PCF_Kids_epaisseur] where Cylindre ='" + mesdonnees2.ColumnIndex + "' and Sphere ='" + mesdonnees2.LineIndex + "' ";
+                        var diametre_chiffre = 0;
+
+                        if (Diametre == "57")
+                        {
+                            diametre_chiffre = 55;
+                        }
+                        else
+                        {
+                            diametre_chiffre = 60;
+                        }
+                            string strRequete7 = "SELECT [Epaisseur] FROM [ACI].[dbo].[Table_PCF_Kids_epaisseur] where Cylindre ='" + mesdonnees2.ColumnIndex + "' and Sphere ='" + mesdonnees2.LineIndex + "' and  Diametre = '" + diametre_chiffre + "'";
                         myConnection.Open();
                         SqlCommand myCommand7 = new SqlCommand(strRequete7, myConnection);
                         SqlDataReader mySqllDataReader7 = myCommand7.ExecuteReader();
@@ -741,8 +829,6 @@ namespace Calage_Inserts
                     i += 1;
                     cavité += 1;
                 }
-                //MessageBox.Show("" + Diametre);
-
             }
             else // POUR LE SEMI FINI
             {
@@ -765,7 +851,7 @@ namespace Calage_Inserts
                     // POUR TOUTES LES CAVITES
                     foreach (donnees2 mesdonnees2 in list2)
                     {
-                        xlworkSheet.Cells[12, i] = mesdonnees2.LineIndex + "/" + mesdonnees2.ColumnIndex;
+                        xlworkSheet.Cells[12, i] = mesdonnees2.LineIndex + " " + mesdonnees2.ColumnIndex;
 
 
                         myConnection.Close();
@@ -945,7 +1031,6 @@ namespace Calage_Inserts
                         i += 1;
                         cavité += 1;
                     }
-
                 }
                 else
                 {
@@ -971,7 +1056,7 @@ namespace Calage_Inserts
                     foreach (donnees2 mesdonnees2 in list2)
                     {
 
-                        xlworkSheet.Cells[12, i] = mesdonnees2.LineIndex + "/" + mesdonnees2.ColumnIndex + "/" + mesdonnees2.Eye;
+                        xlworkSheet.Cells[12, i] = mesdonnees2.LineIndex + "/" + mesdonnees2.ColumnIndex + " " + mesdonnees2.Eye;
 
                         ///////////////////////////////////////////////////////
                         //TOUT LES INSERTS POUR LE NON PROGESSIF DISPONIBLE
@@ -1069,6 +1154,7 @@ namespace Calage_Inserts
                         {
                             var CC = "";
                             var epais = 0.0;
+                            Diametre = "80";
                             string strRequete5 = "SELECT [CX],[Epais] FROM[ACI].[dbo].[Contrainte_all] WHERE Produit = '" + Nom_Produit + "' AND Base = '" + mesdonnees2.LineIndex + "' AND Addition ='" + mesdonnees2.ColumnIndex + "'";
                             myConnection.Open();
                             SqlCommand myCommand5 = new SqlCommand(strRequete5, myConnection);
@@ -1183,6 +1269,8 @@ namespace Calage_Inserts
                         {
                             var CC = "";
                             var epais = 0.0;
+                            Diametre = "80";
+
                             string strRequete5 = "SELECT [CX],[Epais] FROM[ACI].[dbo].[Contrainte_all] WHERE Produit = '" + Nom_Produit + "' AND Base = '" + mesdonnees2.LineIndex + "'";
                             myConnection.Open();
                             SqlCommand myCommand5 = new SqlCommand(strRequete5, myConnection);
@@ -1287,94 +1375,105 @@ namespace Calage_Inserts
                 }
             }
 
-            var Job_precedent = 0;
-            var job_actuel = dataGridView1.CurrentRow.Cells["JOB_NB"].Value;
-            var job_mere = dataGridView1.CurrentRow.Cells["JOB_NB"].Value;
-            var limite_recherche = 0;
-            var ins_cc_actuel = "";
-            var ins_cc_precedent = "";
-            var ins_cx_actuel = "";
-            var ins_cx_precedent = "";
+            xlworkSheet.Cells[5, 2] = dataGridView1.CurrentRow.Cells["ROUTING_NAME"].Value;
 
 
             if (cd_press == "P23" || cd_press == "P24")
             {
                 con.Close();
-                string strRequette15 = "SELECT distinct COMBO_BOM.INS_NB_INS_CX, COMBO_BOM.INS_NB_INS_CV FROM COMBO_JOB_LINES, COMBO_ITEMS, COMBO_BOM where COMBO_ITEMS.LB_LOGI_SKU = COMBO_JOB_LINES.LB_LOGI_SKU and COMBO_BOM.CD_CCE_SKU = COMBO_ITEMS.CD_CCE_SKU and JOB_NB = '" + job_mere + "'";
+                string strRequette30 = "SELECT distinct COMBO_BOM.INS_NB_INS_CX, COMBO_BOM.INS_NB_INS_CV FROM COMBO_JOB_LINES, COMBO_ITEMS, COMBO_BOM where COMBO_ITEMS.LB_LOGI_SKU = COMBO_JOB_LINES.LB_LOGI_SKU and COMBO_BOM.CD_CCE_SKU = COMBO_ITEMS.CD_CCE_SKU and JOB_NB = '" + dataGridView1.CurrentRow.Cells["JOB_NB"].Value + "'";
                 con.Open();
-                OracleCommand myCommand15 = new OracleCommand(strRequette15, con);
-                OracleDataReader mySqlDataReader15 = myCommand15.ExecuteReader();
-                while (mySqlDataReader15.Read())
+                OracleCommand myCommand30 = new OracleCommand(strRequette30, con);
+                OracleDataReader mySqlDataReader30 = myCommand30.ExecuteReader();
+                while (mySqlDataReader30.Read())
                 {
-                    ins_cx_actuel = mySqlDataReader15.GetString(0);
-                    ins_cc_actuel = mySqlDataReader15.GetString(1);
+                    list15.Add(new donnees15
+                    {
+                        ins_cx = mySqlDataReader30.GetString(0),
+                        ins_cv = mySqlDataReader30.GetString(1),
+                        
+                    });
                 }
                 con.Close();
 
-                string strRequette17 = "SELECT distinct JOB_NB, CREATION_DATE FROM COMBO_JOB_HEADER_TRACKING where CD_PRESS = '" + cd_press + "' ORDER BY CREATION_DATE";
+                string strRequette31 = "SELECT DISTINCT JOB_NB, ROUTING_NAME, CD_PRESS, CD_MOLD, PRODUCT FROM COMBO_JOB_HEADER_TRACKING WHERE JOB_NB NOT IN(SELECT DISTINCT JOB_NB FROM COMBO_JOB_HEADER_TRACKING WHERE  IS_INSERT_READY= 'T') and JOB_NB > 10127000 and JOB_NB<> '" + dataGridView1.CurrentRow.Cells["JOB_NB"].Value + "' and CD_PRESS = '" + cd_press + "' order by JOB_NB desc";
                 con.Open();
-                OracleCommand myCommand17 = new OracleCommand(strRequette17, con);
-                OracleDataReader mySqlDataReader17 = myCommand17.ExecuteReader();
-                while (mySqlDataReader17.Read())
+                OracleCommand myCommand31 = new OracleCommand(strRequette31, con);
+                OracleDataReader mySqlDataReader31 = myCommand31.ExecuteReader();
+                while (mySqlDataReader31.Read())
                 {
-                    job_actuel = mySqlDataReader17.GetInt32(0);
+                    list16.Add(new donnees16
+                    {
+                        Job_prec = mySqlDataReader31.GetInt32(0)
+                    });
                 }
                 con.Close();
 
-                while (limite_recherche < 50)
+                foreach (donnees16 mesdonnees16 in list16)
                 {
-                    //TOUVER LE DERNIER JOBS + Verification
-                    string strRequette13 = "SELECT distinct JOB_NB, CREATION_DATE FROM COMBO_JOB_HEADER_TRACKING where CD_PRESS = '" + cd_press + "' and JOB_NB < '" + job_actuel + "' ORDER BY CREATION_DATE";
+                    list17.Clear();
+                    string strRequette32 = "SELECT distinct COMBO_BOM.INS_NB_INS_CX, COMBO_BOM.INS_NB_INS_CV FROM COMBO_JOB_LINES, COMBO_ITEMS, COMBO_BOM where COMBO_ITEMS.LB_LOGI_SKU = COMBO_JOB_LINES.LB_LOGI_SKU and COMBO_BOM.CD_CCE_SKU = COMBO_ITEMS.CD_CCE_SKU and JOB_NB = '" + mesdonnees16.Job_prec + "'";
                     con.Open();
-                    OracleCommand myCommand13 = new OracleCommand(strRequette13, con);
-                    OracleDataReader mySqlDataReader13 = myCommand13.ExecuteReader();
-                    while (mySqlDataReader13.Read())
+                    OracleCommand myCommand32 = new OracleCommand(strRequette32, con);
+                    OracleDataReader mySqlDataReader32 = myCommand32.ExecuteReader();
+                    while (mySqlDataReader32.Read())
                     {
-                        Job_precedent = mySqlDataReader13.GetInt32(0);
+                        list17.Add(new donnees17
+                        {
+                            ins_cx_Job_prec = mySqlDataReader32.GetString(0),
+                            ins_cv_Job_prec = mySqlDataReader32.GetString(1),
+                        });
                     }
                     con.Close();
 
-                    string strRequette16 = "SELECT distinct COMBO_BOM.INS_NB_INS_CX, COMBO_BOM.INS_NB_INS_CV FROM COMBO_JOB_LINES, COMBO_ITEMS, COMBO_BOM where COMBO_ITEMS.LB_LOGI_SKU = COMBO_JOB_LINES.LB_LOGI_SKU and COMBO_BOM.CD_CCE_SKU = COMBO_ITEMS.CD_CCE_SKU and JOB_NB = '" + Job_precedent + "'";
-                    con.Open();
-                    OracleCommand myCommand16 = new OracleCommand(strRequette16, con);
-                    OracleDataReader mySqlDataReader16 = myCommand16.ExecuteReader();
-                    while (mySqlDataReader16.Read())
-                    {
-                        ins_cx_precedent = mySqlDataReader16.GetString(0);
-                        ins_cc_precedent = mySqlDataReader16.GetString(1);
-                    }
-                    con.Close();
+                    var inscc1 = "";
+                    var inscx1 = "";
+                    var compteurcc = 0;
+                    var compteurcx = 0;
 
-                    if (Job_precedent != System.Convert.ToInt32(job_mere))
+                    if (list17.Count() == list15.Count())
                     {
-                        if (ins_cx_actuel == ins_cx_precedent && ins_cc_actuel == ins_cc_precedent)
+                        var i1 = 1;
+                        foreach (donnees15 mesdonnees15 in list15)
                         {
-                            var result = MessageBox.Show("des inserts CC et CX sont identiques, jobs " + job_mere + " = " + Job_precedent + " \n Utiliser les mêmes inserts ?", "Attention", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                            inscc1 = mesdonnees15.ins_cx;
+                            inscx1 = mesdonnees15.ins_cv;
 
-                        }
-                        else if (ins_cc_actuel == ins_cc_precedent)
-                        {
-                            var result1 = MessageBox.Show("des inserts CC sont identiques, jobs " + job_mere + " = " + Job_precedent + " \n Utiliser les mêmes inserts ?", "Attention", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                            if (result1 == DialogResult.Yes)
+                            var i2 = 1;
+                            foreach (donnees17 mesdonnees17 in list17)
                             {
-                                break;
+                                if (i1 == i2)
+                                {
+                                    if (inscc1 == mesdonnees17.ins_cx_Job_prec)
+                                    {
+                                        compteurcc += 1;
+                                    }
+                                    
+                                    if (inscx1 == mesdonnees17.ins_cv_Job_prec)
+                                    {
+                                        compteurcx += 1;
+                                    }
+                                }
+
+                                i2 += 1;
                             }
+
+                            i1 += 1;
                         }
                     }
 
-                    job_actuel = Job_precedent;
+                    if (compteurcc == list15.Count())
+                    {
+                        MessageBox.Show("le jobs " + mesdonnees16.Job_prec + " et le jobs " + dataGridView1.CurrentRow.Cells["JOB_NB"].Value + "on la même valeur de cx");
+                    }
+                    if (compteurcx == list15.Count())
+                    {
+                        MessageBox.Show("le jobs " + mesdonnees16.Job_prec + " et le jobs " + dataGridView1.CurrentRow.Cells["JOB_NB"].Value + "on la même valeur de cc");
+                    }
 
-                    limite_recherche += 1;
                 }
-
-                MessageBox.Show("fin de boucle");
-
-
-
-
             }
 
-            conn.Close();
             xlworkbook.SaveAs(destination, Excel.XlFileFormat.xlWorkbookNormal, misValue, misValue, misValue, misValue, Excel.XlSaveAsAccessMode.xlExclusive, misValue, misValue);
             xlworkbook.Close(true, misValue, misValue);
             xlsp.Quit();
@@ -1386,10 +1485,13 @@ namespace Calage_Inserts
 
         private void button3_Click1(object sender, EventArgs e)
         {
-
         }
 
         private void button6_Click_1(object sender, EventArgs e)
+        {
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
         {
         }
     }

@@ -237,7 +237,6 @@ C:\Users\lenzia\Desktop\Calage_Inserts\Calage_Inserts\bin\Debug\Calage_Inserts.e
 C:\Users\lenzia\Desktop\Calage_Inserts\Calage_Inserts\bin\Debug\Calage_Inserts.exe
 C:\Users\lenzia\Desktop\Calage_Inserts\Calage_Inserts\bin\Debug\EPPlus.dll
 C:\Users\lenzia\Desktop\Calage_Inserts\Calage_Inserts\bin\Debug\Microsoft.IO.RecyclableMemoryStream.dll
-C:\Users\lenzia\Desktop\Calage_Inserts\Calage_Inserts\bin\Debug\Oracle.DataAccess.dll
 C:\Users\lenzia\Desktop\Calage_Inserts\Calage_Inserts\bin\Debug\Oracle.ManagedDataAccess.dll
 C:\Users\lenzia\Desktop\Calage_Inserts\Calage_Inserts\bin\Debug\System.Data.SqlClient.dll
 C:\Users\lenzia\Desktop\Calage_Inserts\Calage_Inserts\bin\Debug\SQLitePCLRaw.core.dll
@@ -326,3 +325,5 @@ C:\Users\thiernd\Documents\Projets\.NET\Calage_Inserts\Calage_Inserts\obj\Debug\
 C:\Users\thiernd\Documents\Projets\.NET\Calage_Inserts\Calage_Inserts\obj\Debug\Calage_Inserts.csproj.CopyComplete
 C:\Users\thiernd\Documents\Projets\.NET\Calage_Inserts\Calage_Inserts\obj\Debug\Calage_Inserts.exe
 C:\Users\thiernd\Documents\Projets\.NET\Calage_Inserts\Calage_Inserts\obj\Debug\Calage_Inserts.pdb
+C:\Users\lenzia\Desktop\Calage_Inserts\Calage_Inserts\obj\Debug\Calage_Inserts.Remplacer_Un_Insert.resources
+C:\Users\lenzia\Desktop\Calage_Inserts\Calage_Inserts\bin\Debug\Oracle.DataAccess.dll
